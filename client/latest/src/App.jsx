@@ -18,6 +18,13 @@ function App() {
   const [theme, setTheme] = useState(localStorage.getItem("tinyToursTheme") || "light");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const getErrorMessage = (err, fallback) => {
+    const data = err?.response?.data;
+    if (typeof data === "string") return data;
+    if (data && typeof data.error === "string") return data.error;
+    return fallback;
+  };
+
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -44,9 +51,11 @@ function App() {
       setError("");
       try {
         const response = await fetchTours();
-        setTours(response.data);
+        const toursData = Array.isArray(response.data) ? response.data : [];
+        setTours(toursData);
       } catch (fetchError) {
-        setError(fetchError?.response?.data || "Unable to load tours.");
+        setError(getErrorMessage(fetchError, "Unable to load tours."));
+        setTours([]);
       } finally {
         setLoading(false);
       }
@@ -65,7 +74,7 @@ function App() {
       setError("Login did not return a token.");
       return false;
     } catch (loginError) {
-      setError(loginError?.response?.data || "Login failed. Please try again.");
+      setError(getErrorMessage(loginError, "Login failed. Please try again."));
       return false;
     }
   };
@@ -75,7 +84,7 @@ function App() {
       await signupUser(formData);
       return true;
     } catch (signupError) {
-      setError(signupError?.response?.data || "Signup failed. Please try again.");
+      setError(getErrorMessage(signupError, "Signup failed. Please try again."));
       return false;
     }
   };
@@ -86,7 +95,7 @@ function App() {
       setTours((previousTours) => [response.data, ...previousTours]);
       return true;
     } catch (tourError) {
-      setError(tourError?.response?.data || "Failed to create the tour.");
+      setError(getErrorMessage(tourError, "Failed to create the tour."));
       return false;
     }
   };
@@ -102,7 +111,7 @@ function App() {
       setFavorites((currentFavorites) => currentFavorites.filter((tour) => tour._id !== tourId));
       return true;
     } catch (deleteError) {
-      setError(deleteError?.response?.data || "Failed to delete the tour.");
+      setError(getErrorMessage(deleteError, "Failed to delete the tour."));
       return false;
     }
   };
