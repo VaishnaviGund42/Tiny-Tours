@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const fs = require("fs");
 const path = require("path");
 const connectDB = require("./config/db");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
@@ -28,12 +29,15 @@ app.use("/api/tours", require("./routes/tourRoutes"));
 
 // Serve static files in both dev and prod
 const clientBuildPath = path.join(__dirname, "..", "client", "latest", "dist");
-app.use(express.static(clientBuildPath));
+const hasClientBuild = fs.existsSync(path.join(clientBuildPath, "index.html"));
+if (hasClientBuild) {
+  app.use(express.static(clientBuildPath));
+}
 
 // Add favicon handling
 app.get('/favicon.svg', (req, res) => {
   const faviconPath = path.join(clientBuildPath, 'favicon.svg');
-  if (require('fs').existsSync(faviconPath)) {
+  if (fs.existsSync(faviconPath)) {
     res.sendFile(faviconPath);
   } else {
     res.status(404).send('Favicon not found');
@@ -42,7 +46,10 @@ app.get('/favicon.svg', (req, res) => {
 
 // Catch-all for SPA routing
 app.use((req, res) => {
-  res.sendFile(path.join(clientBuildPath, "index.html"));
+  if (hasClientBuild) {
+    return res.sendFile(path.join(clientBuildPath, "index.html"));
+  }
+  return res.status(404).json({ error: "Route not found" });
 });
 
 // Global error handler
