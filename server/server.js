@@ -44,6 +44,12 @@ app.use((req, res) => {
   res.sendFile(path.join(clientBuildPath, "index.html"));
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
 const PORT = process.env.PORT || 5000;
 
 if (require.main === module) {
