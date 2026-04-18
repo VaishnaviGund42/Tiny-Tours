@@ -9,9 +9,13 @@ const app = express();
 
 app.use(cors({ 
   origin: function (origin, callback) {
-    const allowedOrigins = ["https://tiny-tours.vercel.app"];
+    const allowedOrigins = [
+      "https://tiny-tours.vercel.app",
+      "https://tiny-tours-sswp.vercel.app",
+    ];
     const isLocalhostDev = /^http:\/\/localhost:\d+$/.test(origin || "");
-    if (!origin || isLocalhostDev || allowedOrigins.includes(origin) || /https:\/\/.*\.vercel\.app$/.test(origin)) {
+    const isVercelPreview = /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin || "");
+    if (!origin || isLocalhostDev || allowedOrigins.includes(origin) || isVercelPreview) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
