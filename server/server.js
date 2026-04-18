@@ -19,8 +19,17 @@ if (process.env.NODE_ENV === "production") {
 
   app.use(express.static(clientBuildPath));
 
+  // Add favicon handling
+  app.get('/favicon.svg', (req, res) => {
+    const faviconPath = path.join(clientBuildPath, 'favicon.svg');
+    if (require('fs').existsSync(faviconPath)) {
+      res.sendFile(faviconPath);
+    } else {
+      res.status(404).send('Favicon not found');
+    }
+  });
 
-   app.use((req, res) => {
+  app.use((req, res) => {
     res.sendFile(path.join(clientBuildPath, "index.html"));
   });
 }
